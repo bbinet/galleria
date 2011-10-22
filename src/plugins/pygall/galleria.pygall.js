@@ -1,14 +1,13 @@
 /**
- * @preserve Galleria Flickr Plugin 2011-08-01
+ * @preserve Galleria PyGall Plugin 2011-10-23
  * http://galleria.aino.se
  *
- * Copyright 2011, Aino
  * Licensed under the MIT license.
  */
 
 /*global jQuery, Galleria, window */
 
-Galleria.requires(1.25, 'The Flickr Plugin requires Galleria version 1.2.5 or later.');
+Galleria.requires(1.25, 'The PyGall Plugin requires Galleria version 1.2.5 or later.');
 
 (function($) {
 
@@ -20,19 +19,19 @@ var PATH = Galleria.utils.getScriptPath();
     @class
     @constructor
 
-    @example var flickr = new Galleria.Flickr();
+    @example var pygall = new Galleria.PyGall();
 
     @author http://aino.se
 
     @requires jQuery
     @requires Galleria
 
-    @param {String} [api_key] Flickr API key to be used, defaults to the Galleria key
+    @param {String} [api_key] PyGall API key to be used, defaults to the Galleria key
 
     @returns Instance
 */
 
-Galleria.Flickr = function( api_key ) {
+Galleria.PyGall = function( api_key ) {
 
     this.api_key = api_key || '2a2ce06c15780ebeb0b706650fc890b2';
 
@@ -47,14 +46,14 @@ Galleria.Flickr = function( api_key ) {
     };
 };
 
-Galleria.Flickr.prototype = {
+Galleria.PyGall.prototype = {
 
     // bring back the constructor reference
 
-    constructor: Galleria.Flickr,
+    constructor: Galleria.PyGall,
 
     /**
-        Search for anything at Flickr
+        Search for anything at PyGall
 
         @param {String} phrase The string to search for
         @param {Function} [callback] The callback to be called when the data is ready
@@ -69,7 +68,7 @@ Galleria.Flickr.prototype = {
     },
 
     /**
-        Search for anything at Flickr by tag
+        Search for anything at PyGall by tag
 
         @param {String} tag The tag(s) to search for
         @param {Function} [callback] The callback to be called when the data is ready
@@ -94,12 +93,12 @@ Galleria.Flickr.prototype = {
 
     user: function( username, callback ) {
         return this._call({
-            method: 'flickr.urls.lookupUser',
-            url: 'flickr.com/photos/' + username
+            method: 'pygall.urls.lookupUser',
+            url: 'pygall.com/photos/' + username
         }, function( data ) {
             this._find({
                 user_id: data.user.id,
-                method: 'flickr.people.getPublicPhotos'
+                method: 'pygall.people.getPublicPhotos'
             }, callback);
         });
     },
@@ -172,7 +171,7 @@ Galleria.Flickr.prototype = {
     },
 
     /**
-        Set flickr options
+        Set pygall options
 
         @param {Object} options The options object to blend
 
@@ -185,7 +184,7 @@ Galleria.Flickr.prototype = {
     },
 
 
-    // call Flickr and raise errors
+    // call PyGall and raise errors
 
     _call: function( params, callback ) {
 
@@ -214,7 +213,7 @@ Galleria.Flickr.prototype = {
     },
 
 
-    // "hidden" way of getting a big image (~1024) from flickr
+    // "hidden" way of getting a big image (~1024) from pygall
 
     _getBig: function( photo ) {
 
@@ -222,7 +221,7 @@ Galleria.Flickr.prototype = {
             return photo.url_l;
         } else if ( parseInt( photo.width_o, 10 ) > 1280 ) {
 
-            return 'http://farm'+photo.farm + '.static.flickr.com/'+photo.server +
+            return 'http://farm'+photo.farm + '.static.pygall.com/'+photo.server +
                 '/' + photo.id + '_' + photo.secret + '_b.jpg';
         }
 
@@ -263,7 +262,7 @@ Galleria.Flickr.prototype = {
     },
 
 
-    // ask flickr for photos, parse the result and call the callback with the galleria-ready data array
+    // ask pygall for photos, parse the result and call the callback with the galleria-ready data array
 
     _find: function( params, callback ) {
 
@@ -291,7 +290,7 @@ Galleria.Flickr.prototype = {
                     big: this._getBig( photo ),
                     title: photos[i].title,
                     description: this.options.description && photos[i].description ? photos[i].description._content : '',
-                    link: this.options.backlink ? 'http://flickr.com/photos/' + photo.owner + '/' + photo.id : ''
+                    link: this.options.backlink ? 'http://pygall.com/photos/' + photo.owner + '/' + photo.id : ''
                 });
             }
             callback.call( this, gallery );
@@ -302,7 +301,7 @@ Galleria.Flickr.prototype = {
 
 /**
     Galleria modifications
-    We fake-extend the load prototype to make Flickr integration as simple as possible
+    We fake-extend the load prototype to make PyGall integration as simple as possible
 */
 
 
@@ -311,12 +310,12 @@ Galleria.Flickr.prototype = {
 var load = Galleria.prototype.load;
 
 
-// fake-extend the load prototype using the flickr data
+// fake-extend the load prototype using the pygall data
 
 Galleria.prototype.load = function() {
 
-    // pass if no data is provided or flickr option not found
-    if ( arguments.length || typeof this._options.flickr !== 'string' ) {
+    // pass if no data is provided or pygall option not found
+    if ( arguments.length || typeof this._options.pygall !== 'string' ) {
         load.apply( this, Galleria.utils.array( arguments ) );
         return;
     }
@@ -324,9 +323,9 @@ Galleria.prototype.load = function() {
     // define some local vars
     var self = this,
         args = Galleria.utils.array( arguments ),
-        flickr = this._options.flickr.split(':'),
+        pygall = this._options.pygall.split(':'),
         f,
-        opts = $.extend({}, self._options.flickrOptions),
+        opts = $.extend({}, self._options.pygallOptions),
         loader = typeof opts.loader !== 'undefined' ?
             opts.loader : $('<div>').css({
                 width: 48,
@@ -335,17 +334,17 @@ Galleria.prototype.load = function() {
                 background:'#000 url('+PATH+'loader.gif) no-repeat 50% 50%'
             });
 
-    if ( flickr.length ) {
+    if ( pygall.length ) {
 
         // validate the method
-        if ( typeof Galleria.Flickr.prototype[ flickr[0] ] !== 'function' ) {
-            Galleria.raise( flickr[0] + ' method not found in Flickr plugin' );
+        if ( typeof Galleria.PyGall.prototype[ pygall[0] ] !== 'function' ) {
+            Galleria.raise( pygall[0] + ' method not found in PyGall plugin' );
             return load.apply( this, args );
         }
 
         // validate the argument
-        if ( !flickr[1] ) {
-            Galleria.raise( 'No flickr argument found' );
+        if ( !pygall[1] ) {
+            Galleria.raise( 'No pygall argument found' );
             return load.apply( this, args );
         }
 
@@ -355,15 +354,15 @@ Galleria.prototype.load = function() {
         },100);
 
         // create the instance
-        f = new Galleria.Flickr();
+        f = new Galleria.PyGall();
 
-        // apply Flickr options
-        if ( typeof self._options.flickrOptions === 'object' ) {
-            f.setOptions( self._options.flickrOptions );
+        // apply PyGall options
+        if ( typeof self._options.pygallOptions === 'object' ) {
+            f.setOptions( self._options.pygallOptions );
         }
 
-        // call the flickr method and trigger the DATA event
-        f[ flickr[0] ]( flickr[1], function( data ) {
+        // call the pygall method and trigger the DATA event
+        f[ pygall[0] ]( pygall[1], function( data ) {
 
             self._data = data;
             loader.remove();
@@ -373,7 +372,7 @@ Galleria.prototype.load = function() {
         });
     } else {
 
-        // if flickr array not found, pass
+        // if pygall array not found, pass
         load.apply( this, args );
     }
 };
