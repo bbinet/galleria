@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Galleria Flickr Plugin</title>
+        <title>Galleria PyGall Plugin</title>
         <style>
         
             /* Demo styles */
@@ -25,16 +25,16 @@
         <!-- load Galleria -->
         <script src="../../galleria.js"></script>
         
-        <!-- load flickr plugin -->
-        <script src="galleria.flickr.js"></script>
+        <!-- load pygall plugin -->
+        <script src="galleria.pygall.js"></script>
 
     </head>
 <body>
     <div class="content">
-        <h1>Galleria Flickr Plugin Demo</h1>
-        <p>Demonstrating a basic gallery example with a Flickr search.</p>
+        <h1>Galleria PyGall Plugin Demo</h1>
+        <p>Demonstrating a basic gallery example with a PyGall search.</p>
         
-        <!-- Adding gallery images. This is just a container for the dynamic flickr images -->
+        <!-- Adding gallery images. This is just a container for the dynamic pygall images -->
         
         <div id="galleria"></div>
         
@@ -47,8 +47,8 @@
     
     // Initialize Galleria
     $('#galleria').galleria({
-        flickr: 'search:cityscape',
-        flickrOptions: {
+        pygall: 'search:cityscape',
+        pygallOptions: {
             sort: 'interestingness-desc'
         }
     });
