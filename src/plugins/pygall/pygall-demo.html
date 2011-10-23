@@ -32,13 +32,11 @@
 <body>
     <div class="content">
         <h1>Galleria PyGall Plugin Demo</h1>
-        <p>Demonstrating a basic gallery example with a PyGall search.</p>
+        <p>Demonstrating a basic gallery example with a PyGall tag.</p>
         
         <!-- Adding gallery images. This is just a container for the dynamic pygall images -->
         
         <div id="galleria"></div>
-        
-        <p class="cred">Made by <a href="http://galleria.aino.se">Galleria</a>.</p>
     </div>
     <script>
 
@@ -47,9 +45,11 @@
     
     // Initialize Galleria
     $('#galleria').galleria({
-        pygall: 'search:cityscape',
+        pygall: 'tags:test',
         pygallOptions: {
-            sort: 'interestingness-desc'
+            server_url: 'http://127.0.0.1:6543/query.json',
+            //max: 2,
+            //description: true
         }
     });
 
