@@ -48,6 +48,13 @@
         pygall: 'tags:test',
         pygallOptions: {
             server_url: 'http://127.0.0.1:6543/query.json',
+            complete: function(photos, meta) {
+                console.log('photos: ', photos);
+                console.log('meta: ', meta);
+                // TODO: the meta object contains information about the
+                // pagination, so we can use it to make links to previous/next,
+                // first/last pages
+            }
             //max: 2,
             //description: true
         }

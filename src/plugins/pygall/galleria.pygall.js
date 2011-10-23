@@ -41,6 +41,8 @@ Galleria.PyGall = function() {
         title: false,                  // set this to true to get the image title
         description: false,            // set this to true to get description as caption
         complete: function(){}         // callback to be called inside the Galleria.prototype.load
+                                       // the callback will be given both the photos array and
+                                       // a "meta" object
     };
 };
 
@@ -120,9 +122,10 @@ Galleria.PyGall.prototype = {
             dataType: 'jsonp',
             data: params,
             success:  function(data) {
-                callback.call(scope, data.photos);
+                callback.call(scope, data.photos, data.meta);
             },
             failure: function() {
+                //TODO: raise the correct exception
                 Galleria.raise( data.code.toString() + ' ' + data.stat + ': ' + data.message, true );
             }
         });
@@ -145,8 +148,8 @@ Galleria.PyGall.prototype = {
             link: this.options.backlink
         }, params );
 
-        return this._call( params, function(data) {
-            callback.call( this, data );
+        return this._call( params, function(data, meta) {
+            callback.call( this, data, meta );
         });
     }
 };
@@ -215,12 +218,12 @@ Galleria.prototype.load = function() {
         }
 
         // call the pygall method and trigger the DATA event
-        f[ pygall[0] ]( pygall[1], function( data ) {
+        f[ pygall[0] ]( pygall[1], function( data, meta ) {
 
             self._data = data;
             loader.remove();
             self.trigger( Galleria.DATA );
-            f.options.complete.call(f, data);
+            f.options.complete.call(f, data, meta);
 
         });
     } else {
