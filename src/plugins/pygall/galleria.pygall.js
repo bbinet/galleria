@@ -21,28 +21,26 @@ var PATH = Galleria.utils.getScriptPath();
 
     @example var pygall = new Galleria.PyGall();
 
-    @author http://aino.se
+    @author Bruno Binet
 
     @requires jQuery
     @requires Galleria
 
-    @param {String} [api_key] PyGall API key to be used, defaults to the Galleria key
-
     @returns Instance
 */
 
-Galleria.PyGall = function( api_key ) {
-
-    this.api_key = api_key || '2a2ce06c15780ebeb0b706650fc890b2';
+Galleria.PyGall = function() {
 
     this.options = {
-        max: 30,                       // photos to return
-        imageSize: 'medium',           // photo size ( thumb,small,medium,big,original )
-        thumbSize: 'thumb',            // thumbnail size ( thumb,small,medium,big,original )
-        sort: 'interestingness-desc',  // sort option ( date-posted-asc, date-posted-desc, date-taken-asc, date-taken-desc, interestingness-desc, interestingness-asc, relevance )
+        server_url: 'http://pygall.inneos.org/demo', // PyGall server url to be used, defaults to the PyGall demo server url
+        thumb: false,                  // set this to true to get a thumb image
+        big: false,                    // set this to true to get a big image
+        backlink: false,               // set this to true if you want to pass a link back to the original image
+        max: 30,                       // max number of photos to return
+        //sort: 'date-taken-desc',       // sort option ( date-posted-asc, date-posted-desc, date-taken-asc, date-taken-desc, interestingness-desc, interestingness-asc, relevance )
+        title: false,                  // set this to true to get the image title
         description: false,            // set this to true to get description as caption
-        complete: function(){},        // callback to be called inside the Galleria.prototype.load
-        backlink: false                // set this to true if you want to pass a link back to the original image
+        complete: function(){}         // callback to be called inside the Galleria.prototype.load
     };
 };
 
@@ -63,7 +61,7 @@ Galleria.PyGall.prototype = {
 
     search: function( phrase, callback ) {
         return this._find({
-            text: phrase
+            search: phrase
         }, callback );
     },
 
@@ -83,91 +81,18 @@ Galleria.PyGall.prototype = {
     },
 
     /**
-        Get a user's public photos
-
-        @param {String} username The username as shown in the URL to fetch
-        @param {Function} [callback] The callback to be called when the data is ready
-
-        @returns Instance
-    */
-
-    user: function( username, callback ) {
-        return this._call({
-            method: 'pygall.urls.lookupUser',
-            url: 'pygall.com/photos/' + username
-        }, function( data ) {
-            this._find({
-                user_id: data.user.id,
-                method: 'pygall.people.getPublicPhotos'
-            }, callback);
-        });
-    },
-
-    /**
         Get photos from a photoset by ID
 
-        @param {String|Number} photoset_id The photoset id to fetch
+        @param {String|Number} photoset The photoset id to fetch
         @param {Function} [callback] The callback to be called when the data is ready
 
         @returns Instance
     */
 
-    set: function( photoset_id, callback ) {
+    photoset: function( photoset, callback ) {
         return this._find({
-            photoset_id: photoset_id,
-            method: 'flickr.photosets.getPhotos'
+            photoset: photoset,
         }, callback);
-    },
-
-    /**
-        Get photos from a gallery by ID
-
-        @param {String|Number} gallery_id The gallery id to fetch
-        @param {Function} [callback] The callback to be called when the data is ready
-
-        @returns Instance
-    */
-
-    gallery: function( gallery_id, callback ) {
-        return this._find({
-            gallery_id: gallery_id,
-            method: 'flickr.galleries.getPhotos'
-        }, callback);
-    },
-
-    /**
-        Search groups and fetch photos from the first group found
-        Useful if you know the exact name of a group and want to show the groups photos.
-
-        @param {String} group The group name to search for
-        @param {Function} [callback] The callback to be called when the data is ready
-
-        @returns Instance
-    */
-
-    groupsearch: function( group, callback ) {
-        return this._call({
-            text: group,
-            method: 'flickr.groups.search'
-        }, function( data ) {
-            this.group( data.groups.group[0].nsid, callback );
-        });
-    },
-
-    /**
-        Get photos from a group by ID
-
-        @param {String} group_id The group id to fetch
-        @param {Function} [callback] The callback to be called when the data is ready
-
-        @returns Instance
-    */
-
-    group: function ( group_id, callback ) {
-        return this._find({
-            group_id: group_id,
-            method: 'flickr.groups.pools.getPhotos'
-        }, callback );
     },
 
     /**
@@ -188,77 +113,21 @@ Galleria.PyGall.prototype = {
 
     _call: function( params, callback ) {
 
-        var url = 'http://api.flickr.com/services/rest/?';
-
         var scope = this;
 
-        params = $.extend({
-            format : 'json',
-            jsoncallback : '?',
-            api_key: this.api_key
-        }, params );
-
-        $.each(params, function( key, value ) {
-            url += '&' + key + '=' + value;
-        });
-
-        $.getJSON(url, function(data) {
-            if ( data.stat === 'ok' ) {
-                callback.call(scope, data);
-            } else {
+        $.ajax({
+            url: this.options.server_url,
+            dataType: 'jsonp',
+            data: params,
+            success:  function(data) {
+                callback.call(scope, data.photos);
+            },
+            failure: function() {
                 Galleria.raise( data.code.toString() + ' ' + data.stat + ': ' + data.message, true );
             }
         });
+
         return scope;
-    },
-
-
-    // "hidden" way of getting a big image (~1024) from pygall
-
-    _getBig: function( photo ) {
-
-        if ( photo.url_l ) {
-            return photo.url_l;
-        } else if ( parseInt( photo.width_o, 10 ) > 1280 ) {
-
-            return 'http://farm'+photo.farm + '.static.pygall.com/'+photo.server +
-                '/' + photo.id + '_' + photo.secret + '_b.jpg';
-        }
-
-        return photo.url_o || photo.url_z || photo.url_m;
-
-    },
-
-
-    // get image size by option name
-
-    _getSize: function( photo, size ) {
-
-        var img;
-
-        switch(size) {
-
-            case 'thumb':
-                img = photo.url_t;
-                break;
-
-            case 'small':
-                img = photo.url_s;
-                break;
-
-            case 'big':
-                img = this._getBig( photo );
-                break;
-
-            case 'original':
-                img = photo.url_o ? photo.url_o : this._getBig( photo );
-                break;
-
-            default:
-                img = photo.url_z || photo.url_m;
-                break;
-        }
-        return img;
     },
 
 
@@ -267,33 +136,17 @@ Galleria.PyGall.prototype = {
     _find: function( params, callback ) {
 
         params = $.extend({
-            method: 'flickr.photos.search',
-            extras: 'url_t,url_m,url_o,url_s,url_l,url_z,description',
-            sort: this.options.sort
+            title: this.options.title,
+            description: this.options.description,
+            //sort: this.options.sort,
+            max: this.options.max,
+            thumb: this.options.thumb,
+            big: this.options.big,
+            link: this.options.backlink
         }, params );
 
         return this._call( params, function(data) {
-
-            var gallery = [],
-                photos = data.photos ? data.photos.photo : data.photoset.photo,
-                len = Math.min( this.options.max, photos.length ),
-                photo,
-                i;
-
-            for ( i=0; i<len; i++ ) {
-
-                photo = photos[i];
-
-                gallery.push({
-                    thumb: this._getSize( photo, this.options.thumbSize ),
-                    image: this._getSize( photo, this.options.imageSize ),
-                    big: this._getBig( photo ),
-                    title: photos[i].title,
-                    description: this.options.description && photos[i].description ? photos[i].description._content : '',
-                    link: this.options.backlink ? 'http://pygall.com/photos/' + photo.owner + '/' + photo.id : ''
-                });
-            }
-            callback.call( this, gallery );
+            callback.call( this, data );
         });
     }
 };
@@ -351,7 +204,7 @@ Galleria.prototype.load = function() {
         // apply the preloader
         window.setTimeout(function() {
             self.$( 'target' ).append( loader );
-        },100);
+        },0);
 
         // create the instance
         f = new Galleria.PyGall();
@@ -371,7 +224,6 @@ Galleria.prototype.load = function() {
 
         });
     } else {
-
         // if pygall array not found, pass
         load.apply( this, args );
     }
