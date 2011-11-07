@@ -46,10 +46,7 @@ Galleria.PyGall = function(galleria, options) {
         max: 30,                       // max number of photos to return
         //sort: 'date-taken-desc',       // sort option ( date-posted-asc, date-posted-desc, date-taken-asc, date-taken-desc, interestingness-desc, interestingness-asc, relevance )
         title: false,                  // set this to true to get the image title
-        description: false,            // set this to true to get description as caption
-        complete: function(){}         // callback to be called inside the Galleria.prototype.load
-                                       // the callback will be given both the photos array and
-                                       // a "meta" object
+        description: false             // set this to true to get description as caption
     };
 
     if (options) {
@@ -68,6 +65,15 @@ Galleria.PyGall.prototype = {
     // bring back the constructor reference
 
     constructor: Galleria.PyGall,
+
+    /**
+        Complete callback to be called inside the Galleria.prototype.load
+        (to be overriden by setOptions)
+
+        @param {Array} data The photos data array
+        @param {Object} meta A metadata object also returned by PyGall server
+    */
+    complete: function(data, meta){},
 
     /**
         Search for anything at PyGall
@@ -126,6 +132,10 @@ Galleria.PyGall.prototype = {
     */
 
     setOptions: function( options ) {
+        if (options.complete) {
+            this.complete = options.complete;
+            delete options.complete;
+        }
         $.extend(this._options, options);
         return this;
     },
@@ -243,7 +253,7 @@ Galleria.prototype.load = function() {
             self._data = data;
             loader.remove();
             self.trigger( Galleria.DATA );
-            f.options.complete.call(f, data, meta);
+            f.complete.call(f, data, meta);
 
         }, true);
     } else {
