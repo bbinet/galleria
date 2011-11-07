@@ -31,12 +31,13 @@ var PATH = Galleria.utils.getScriptPath();
     @returns Instance
 */
 
-Galleria.PyGall = function(galleria) {
+Galleria.PyGall = function(galleria, options) {
 
     this._galleria = galleria;
 
     this._last_params = {};
 
+    // set default options
     this._options = {
         server_url: 'http://pygall.inneos.org/demo', // PyGall server url to be used, defaults to the PyGall demo server url
         thumb: false,                  // set this to true to get a thumb image
@@ -50,6 +51,10 @@ Galleria.PyGall = function(galleria) {
                                        // the callback will be given both the photos array and
                                        // a "meta" object
     };
+
+    if (options) {
+        this.setOptions(options);
+    }
 };
 
 Galleria.PyGall.prototype = {
