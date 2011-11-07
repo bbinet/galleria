@@ -26,12 +26,18 @@ var PATH = Galleria.utils.getScriptPath();
     @requires jQuery
     @requires Galleria
 
+    @param {Galleria} galleria Galleria instance which this plugin applies to
+
     @returns Instance
 */
 
-Galleria.PyGall = function() {
+Galleria.PyGall = function(galleria) {
 
-    this.options = {
+    this._galleria = galleria;
+
+    this._last_params = {};
+
+    this._options = {
         server_url: 'http://pygall.inneos.org/demo', // PyGall server url to be used, defaults to the PyGall demo server url
         thumb: false,                  // set this to true to get a thumb image
         big: false,                    // set this to true to get a big image
@@ -48,6 +54,12 @@ Galleria.PyGall = function() {
 
 Galleria.PyGall.prototype = {
 
+    _galleria: null,
+
+    _last_params: null,
+
+    _options: null,
+
     // bring back the constructor reference
 
     constructor: Galleria.PyGall,
@@ -57,14 +69,15 @@ Galleria.PyGall.prototype = {
 
         @param {String} phrase The string to search for
         @param {Function} [callback] The callback to be called when the data is ready
+        @param {Boolean} noload True will not load returned data in Galleria
 
         @returns Instance
     */
 
-    search: function( phrase, callback ) {
+    search: function( phrase, callback, noload ) {
         return this._find({
             search: phrase
-        }, callback );
+        }, callback, noload);
     },
 
     /**
@@ -72,14 +85,15 @@ Galleria.PyGall.prototype = {
 
         @param {String} tag The tag(s) to search for
         @param {Function} [callback] The callback to be called when the data is ready
+        @param {Boolean} noload True will not load returned data in Galleria
 
         @returns Instance
     */
 
-    tags: function( tag, callback ) {
+    tags: function( tag, callback, noload ) {
         return this._find({
             tags: tag
-        }, callback);
+        }, callback, noload);
     },
 
     /**
@@ -87,14 +101,15 @@ Galleria.PyGall.prototype = {
 
         @param {String|Number} photoset The photoset id to fetch
         @param {Function} [callback] The callback to be called when the data is ready
+        @param {Boolean} noload True will not load returned data in Galleria
 
         @returns Instance
     */
 
-    photoset: function( photoset, callback ) {
+    photoset: function( photoset, callback, noload ) {
         return this._find({
             photoset: photoset,
-        }, callback);
+        }, callback, noload);
     },
 
     /**
@@ -106,7 +121,7 @@ Galleria.PyGall.prototype = {
     */
 
     setOptions: function( options ) {
-        $.extend(this.options, options);
+        $.extend(this._options, options);
         return this;
     },
 
@@ -118,7 +133,7 @@ Galleria.PyGall.prototype = {
         var scope = this;
 
         $.ajax({
-            url: this.options.server_url,
+            url: this._options.server_url,
             dataType: 'jsonp',
             data: params,
             success:  function(data) {
@@ -136,20 +151,25 @@ Galleria.PyGall.prototype = {
 
     // ask pygall for photos, parse the result and call the callback with the galleria-ready data array
 
-    _find: function( params, callback ) {
+    _find: function( params, callback, noload ) {
 
         params = $.extend({
-            title: this.options.title,
-            description: this.options.description,
-            //sort: this.options.sort,
-            max: this.options.max,
-            thumb: this.options.thumb,
-            big: this.options.big,
-            link: this.options.backlink
+            title: this._options.title,
+            description: this._options.description,
+            //sort: this._options.sort,
+            max: this._options.max,
+            thumb: this._options.thumb,
+            big: this._options.big,
+            link: this._options.backlink
         }, params );
 
         return this._call( params, function(data, meta) {
-            callback.call( this, data, meta );
+            if (!noload) {
+                this._galleria.load(data);
+            }
+            if (callback) {
+                callback.call( this, data, meta );
+            }
         });
     }
 };
@@ -210,7 +230,7 @@ Galleria.prototype.load = function() {
         },0);
 
         // create the instance
-        f = new Galleria.PyGall();
+        f = new Galleria.PyGall(self);
 
         // apply PyGall options
         if ( typeof self._options.pygallOptions === 'object' ) {
