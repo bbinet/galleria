@@ -235,12 +235,7 @@ Galleria.prototype.load = function() {
         },0);
 
         // create the instance
-        f = new Galleria.PyGall(self);
-
-        // apply PyGall options
-        if ( typeof self._options.pygallOptions === 'object' ) {
-            f.setOptions( self._options.pygallOptions );
-        }
+        f = new Galleria.PyGall(self, opts);
 
         // call the pygall method and trigger the DATA event
         f[ pygall[0] ]( pygall[1], function( data, meta ) {
