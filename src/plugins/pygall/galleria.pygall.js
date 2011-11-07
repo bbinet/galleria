@@ -245,7 +245,7 @@ Galleria.prototype.load = function() {
             self.trigger( Galleria.DATA );
             f.options.complete.call(f, data, meta);
 
-        });
+        }, true);
     } else {
         // if pygall array not found, pass
         load.apply( this, args );
