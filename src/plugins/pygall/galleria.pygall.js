@@ -164,11 +164,11 @@ Galleria.PyGall.prototype = {
         }, params );
 
         return this._call( params, function(data, meta) {
-            if (!noload) {
-                this._galleria.load(data);
-            }
             if (callback) {
                 callback.call( this, data, meta );
+            }
+            if (!noload) {
+                this._galleria.load(data);
             }
         });
     }
