@@ -205,7 +205,7 @@ var load = Galleria.prototype.load;
 
 Galleria.prototype.load = function() {
 
-    // pass if no data is provided or pygall option not found
+    // pass if data is provided or pygall option not found
     if ( arguments.length || typeof this._options.pygall !== 'string' ) {
         load.apply( this, Galleria.utils.array( arguments ) );
         return;
