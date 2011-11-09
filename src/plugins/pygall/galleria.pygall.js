@@ -151,14 +151,8 @@ Galleria.PyGall.prototype = {
             return this;
         }
         this._last_params.page = currentpage - 1;
-        return this._call( this._last_params, function(data, meta) {
-            if (callback) {
-                callback.call( this, data, meta );
-            }
-            if (!noload) {
-                this._galleria.load(data);
-            }
-        });
+
+        return this._find( this._last_params, callback, noload);
     },
 
     /**
@@ -173,14 +167,8 @@ Galleria.PyGall.prototype = {
     nextPage: function( callback, noload ) {
         var currentpage = this._last_params.page || 1;
         this._last_params.page = currentpage + 1;
-        return this._call( this._last_params, function(data, meta) {
-            if (callback) {
-                callback.call( this, data, meta );
-            }
-            if (!noload) {
-                this._galleria.load(data);
-            }
-        });
+
+        return this._find( this._last_params, callback, noload);
     },
 
     /**
