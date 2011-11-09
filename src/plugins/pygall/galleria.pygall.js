@@ -35,8 +35,6 @@ Galleria.PyGall = function(galleria, options) {
 
     this._galleria = galleria;
 
-    this._last_params = {};
-
     // set default options
     this._options = {
         server_url: 'http://pygall.inneos.org/demo', // PyGall server url to be used, defaults to the PyGall demo server url
@@ -137,6 +135,28 @@ Galleria.PyGall.prototype = {
     },
 
     /**
+        Get next page in PyGall pagination
+
+        @param {Function} [callback] The callback to be called when the data is ready
+        @param {Boolean} noload True will not load returned data in Galleria
+
+        @returns Instance
+    */
+
+    nextPage: function( callback, noload ) {
+        var currentpage = this._last_params.page || 1;
+        this._last_params.page = currentpage + 1;
+        return this._call( this._last_params, function(data, meta) {
+            if (callback) {
+                callback.call( this, data, meta );
+            }
+            if (!noload) {
+                this._galleria.load(data);
+            }
+        });
+    },
+
+    /**
         Set pygall options
 
         @param {Object} options The options object to blend
@@ -164,6 +184,7 @@ Galleria.PyGall.prototype = {
             self._galleria.$( 'target' ).append( self._options.loader );
         },0);
 
+        this._last_params = $.extend({}, params);
 
         $.ajax({
             url: this._options.server_url,
