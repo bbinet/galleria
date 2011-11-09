@@ -58,6 +58,13 @@ Galleria.PyGall = function(galleria, options) {
     if (options) {
         this.setOptions(options);
     }
+
+    // register this pygall plugin instance in the galleria plugins property
+    if (!galleria.plugins) {
+        galleria.plugins = {};
+    }
+    galleria.plugins.pygall = this;
+
 };
 
 Galleria.PyGall.prototype = {
