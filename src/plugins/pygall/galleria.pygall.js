@@ -135,6 +135,33 @@ Galleria.PyGall.prototype = {
     },
 
     /**
+        Get previous page in PyGall pagination
+
+        @param {Function} [callback] The callback to be called when the data is ready
+        @param {Boolean} noload True will not load returned data in Galleria
+
+        @returns Instance
+    */
+
+    previousPage: function( callback, noload ) {
+        var currentpage = this._last_params.page || 1;
+        if (currentpage <= 1) {
+            Galleria.raise( 'Can\'t load previous page: current page is' +
+                            'already the first page.');
+            return this;
+        }
+        this._last_params.page = currentpage - 1;
+        return this._call( this._last_params, function(data, meta) {
+            if (callback) {
+                callback.call( this, data, meta );
+            }
+            if (!noload) {
+                this._galleria.load(data);
+            }
+        });
+    },
+
+    /**
         Get next page in PyGall pagination
 
         @param {Function} [callback] The callback to be called when the data is ready
