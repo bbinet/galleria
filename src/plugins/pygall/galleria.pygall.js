@@ -46,7 +46,13 @@ Galleria.PyGall = function(galleria, options) {
         max: 30,                       // max number of photos to return
         //sort: 'date-taken-desc',       // sort option ( date-posted-asc, date-posted-desc, date-taken-asc, date-taken-desc, interestingness-desc, interestingness-asc, relevance )
         title: false,                  // set this to true to get the image title
-        description: false             // set this to true to get description as caption
+        description: false,            // set this to true to get description as caption
+        loader: $('<div>').css({
+            width: 48,
+            height: 48,
+            opacity: 0.7,
+            background:'#000 url('+PATH+'loader.gif) no-repeat 50% 50%'
+        })
     };
 
     if (options) {
@@ -145,22 +151,30 @@ Galleria.PyGall.prototype = {
 
     _call: function( params, callback ) {
 
-        var scope = this;
+        var self = this;
+        // apply the preloader
+        window.setTimeout(function() {
+            self._galleria.$( 'target' ).append( self._options.loader );
+        },0);
+
 
         $.ajax({
             url: this._options.server_url,
             dataType: 'jsonp',
             data: params,
             success:  function(data) {
-                callback.call(scope, data.photos, data.meta);
+                callback.call(self, data.photos, data.meta);
             },
             failure: function() {
                 //TODO: raise the correct exception
                 Galleria.raise( data.code.toString() + ' ' + data.stat + ': ' + data.message, true );
+            },
+            complete: function() {
+                self._options.loader.remove();
             }
         });
 
-        return scope;
+        return self;
     },
 
 
@@ -216,14 +230,7 @@ Galleria.prototype.load = function() {
         args = Galleria.utils.array( arguments ),
         pygall = this._options.pygall.split(':'),
         f,
-        opts = $.extend({}, self._options.pygallOptions),
-        loader = typeof opts.loader !== 'undefined' ?
-            opts.loader : $('<div>').css({
-                width: 48,
-                height: 48,
-                opacity: 0.7,
-                background:'#000 url('+PATH+'loader.gif) no-repeat 50% 50%'
-            });
+        opts = $.extend({}, self._options.pygallOptions);
 
     if ( pygall.length ) {
 
@@ -239,11 +246,6 @@ Galleria.prototype.load = function() {
             return load.apply( this, args );
         }
 
-        // apply the preloader
-        window.setTimeout(function() {
-            self.$( 'target' ).append( loader );
-        },0);
-
         // create the instance
         f = new Galleria.PyGall(self, opts);
 
@@ -251,7 +253,6 @@ Galleria.prototype.load = function() {
         f[ pygall[0] ]( pygall[1], function( data, meta ) {
 
             self._data = data;
-            loader.remove();
             self.trigger( Galleria.DATA );
             f.complete.call(f, data, meta);
 
