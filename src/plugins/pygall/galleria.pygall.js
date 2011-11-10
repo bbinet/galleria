@@ -172,6 +172,22 @@ Galleria.PyGall.prototype = {
     },
 
     /**
+        Get specific page in PyGall pagination
+
+        @param {Integer} page The page to load
+        @param {Function} [callback] The callback to be called when the data is ready
+        @param {Boolean} noload True will not load returned data in Galleria
+
+        @returns Instance
+    */
+
+    getPage: function( page, callback, noload ) {
+        this._last_params.page = page;
+
+        return this._find( this._last_params, callback, noload);
+    },
+
+    /**
         Set pygall options
 
         @param {Object} options The options object to blend
