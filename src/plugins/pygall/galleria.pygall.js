@@ -50,7 +50,8 @@ Galleria.PyGall = function(galleria, options) {
             height: 48,
             opacity: 0.7,
             background:'#000 url('+PATH+'loader.gif) no-repeat 50% 50%'
-        })
+        }),
+        default_callback: $.noop
     };
 
     if (options) {
@@ -76,15 +77,6 @@ Galleria.PyGall.prototype = {
     // bring back the constructor reference
 
     constructor: Galleria.PyGall,
-
-    /**
-        Complete callback to be called inside the Galleria.prototype.load
-        (to be overriden by setOptions)
-
-        @param {Array} data The photos data array
-        @param {Object} meta A metadata object also returned by PyGall server
-    */
-    complete: function(data, meta){},
 
     /**
         Search for anything at PyGall
@@ -196,10 +188,6 @@ Galleria.PyGall.prototype = {
     */
 
     setOptions: function( options ) {
-        if (options.complete) {
-            this.complete = options.complete;
-            delete options.complete;
-        }
         $.extend(this._options, options);
         return this;
     },
@@ -250,6 +238,8 @@ Galleria.PyGall.prototype = {
             big: this._options.big,
             link: this._options.backlink
         }, params );
+
+        callback = callback || this._options.default_callback;
 
         return this._call( params, function(data, meta) {
             if (callback) {
@@ -310,11 +300,9 @@ Galleria.prototype.load = function() {
 
         // call the pygall method and trigger the DATA event
         f[ pygall[0] ]( pygall[1], function( data, meta ) {
-
+            f._options.default_callback(data, meta);
             self._data = data;
             self.trigger( Galleria.DATA );
-            f.complete.call(f, data, meta);
-
         }, true);
     } else {
         // if pygall array not found, pass
