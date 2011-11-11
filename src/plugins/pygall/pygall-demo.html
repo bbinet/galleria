@@ -16,6 +16,33 @@
             
             /* This rule is read by Galleria to define the gallery height: */
             #galleria{height:320px;}
+
+            /* Pagination styles */
+            #pagination {
+                font-size: 11px;
+                background-color:#3e3e3e;
+                color: #fff;
+            }
+            #pagination span, #pagination a {
+                padding: 2px 5px 2px 5px;
+                margin: 2px;
+                color: #fff;
+            }
+            #pagination a {
+                background-color:#3e3e3e;
+                text-decoration: none; /* no underline */
+            }
+            #pagination a:hover, #pagination a:active {
+                background-color:#22BCB9;
+            }
+            #pagination span.current {
+                font-weight: bold;
+                background-color: #313131;
+            }
+            #pagination span.disabled {
+                background-color:#3e3e3e;
+                color: #868686;
+            }
             
         </style>
         
@@ -37,6 +64,7 @@
         <!-- Adding gallery images. This is just a container for the dynamic pygall images -->
         
         <div id="galleria"></div>
+        <div id="pagination"></div>
     </div>
     <script>
 
@@ -44,21 +72,49 @@
     Galleria.loadTheme('../../themes/classic/galleria.classic.js');
     
     // Initialize Galleria
-    $('#galleria').galleria({
+    var gal = $('#galleria').galleria({
+        debug: false,
         pygall: 'tags:test',
         pygallOptions: {
             server_url: 'http://127.0.0.1:6543/query.json',
-            complete: function(photos, meta) {
-                console.log('photos: ', photos);
-                console.log('meta: ', meta);
-                // TODO: the meta object contains information about the
-                // pagination, so we can use it to make links to previous/next,
-                // first/last pages
-            }
-            //max: 2,
-            //description: true
+            default_callback: function(photos, meta) {
+                // the meta object contains information about the pagination,
+                // so we can use it to make pagination links
+                var fragment = '';
+                if (meta.page <= 1) {
+                    fragment += '<span class="disabled">|&lt;</span>';
+                    fragment += '<span class="disabled">« Previous</span>';
+                }
+                else {
+                    fragment += '<a class="prev" href="#1">|&lt;</a>';
+                    var previous = meta.page-1;
+                    fragment += '<a class="prev" href="#'+previous+'">« Previous</a>';
+                }
+                for (var i=1; i<=meta.page_count; i++) {
+                    fragment += (i == meta.page) ?
+                        '<span class="current">'+i+'</span>' :
+                        '<em><a href="#'+i+'">'+i+'</a></em>';
+                }
+                if (meta.page >= meta.page_count) {
+                    fragment += '<span class="disabled">&gt;|</span>';
+                    fragment += '<span class="disabled">Next »</span>';
+                }
+                else {
+                    var next = meta.page+1;
+                    fragment += '<a class="prev" href="#'+next+'">Next »</a>';
+                    fragment += '<a class="prev" href="#'+meta.page_count+'">&gt;|</a>';
+                }
+                $('#pagination').html(fragment);
+                $('#pagination a').click(function(ev) {
+                    ev.preventDefault();
+                    var page = parseInt(ev.target.hash.substring(1));
+                    gal.plugins.pygall.getPage(page);
+                });
+            },
+            max: 3,
+            description: true
         }
-    });
+    }).data('galleria');
 
     </script>
     </body>
